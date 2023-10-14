@@ -42,11 +42,10 @@ app.use((error) => {
   console.log(error);
 });
 
+connectDb();
 
-connectDb()
 mongoose.connection.once("connected", () => {
   server.listen(port, hostName, () => {
-    console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
+    console.log(`⚡️[server]: Server is running at http://${hostName}:${port}`);
   });
 });
-
