@@ -21,8 +21,6 @@ export const login = async (
     const refreshToken = new JsonWebToken({
       payload: others,
     });
-    console.log(accessToken);
-    console.log("aaaaaaaaaaaaaaaaa");
     return res.status(200).json({
       user: others,
       accessToken: accessToken.token,
