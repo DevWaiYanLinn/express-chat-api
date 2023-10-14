@@ -21,3 +21,20 @@ export default async () => {
     },
   ]);
 };
+
+// try {
+//   // seeder()
+//   const mongoCollection = await mongoose.connection.db.createCollection(
+//     "socket.io-adapter-events",
+//     {
+//       capped: true,
+//       size: 1e6
+//     }
+//   );
+//   await mongoCollection.createIndex(
+//     { createdAt: 1 },
+//     { expireAfterSeconds: 3600, background: true }
+//   );
+// } catch (error) {
+//   ("b");
+// }
