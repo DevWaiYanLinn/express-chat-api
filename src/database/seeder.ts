@@ -2,39 +2,98 @@ import Conversation from "../model/conversation";
 import User from "../model/user";
 
 export default async () => {
-  const user = await User.insertMany([
+  const users = await User.insertMany([
     {
-      name: "Wai Yan Lin",
-      email: "waiyanlin@gmail.com",
+      name: "John Doe",
+      email: "johndoe@example.com",
       password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
     },
     {
-      name: "Nyein Thu San",
-      email: "nyeinthusan@gmail.com",
+      name: "Jane Smith",
+      email: "janesmith@example.com",
       password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Bob Johnson",
+      email: "bjohnson@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Alice Brown",
+      email: "alicebrown@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Charlie Wilson",
+      email: "charliewilson@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Emily Davis",
+      email: "emilydavis@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Frank Miller",
+      email: "frankmiller@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Grace Taylor",
+      email: "gracetaylor@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Henry Clark",
+      email: "henryclark@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
+    },
+    {
+      name: "Isabella Moore",
+      email: "isabellamoore@example.com",
+      password: "$2a$12$80TcaieXQoJKwA0pY1tte.dnbOHyF7wMmxu/lGqWQ.q.p2GzvODkW",
+      avatar: `http://192.168.99.139:4000/avatar/${
+        Math.floor(Math.random() * 5) + 1
+      }`,
     },
   ]);
 
-  await Conversation.insertMany([
-    {
-      members: [user[0]._id, user[1]._id],
-    },
-  ]);
+  let conversations: any = [];
+  users.forEach((user: any) => {
+    const others = users
+      .filter((f: any) => f._id !== user._id)
+      .map((m: any) => {
+        return { members: [user._id, m._id] };
+      });
+    conversations = [...conversations, ...others];
+  });
+
+  await Conversation.insertMany(conversations);
 };
-
-// try {
-//   // seeder()
-//   const mongoCollection = await mongoose.connection.db.createCollection(
-//     "socket.io-adapter-events",
-//     {
-//       capped: true,
-//       size: 1e6
-//     }
-//   );
-//   await mongoCollection.createIndex(
-//     { createdAt: 1 },
-//     { expireAfterSeconds: 3600, background: true }
-//   );
-// } catch (error) {
-//   ("b");
-// }

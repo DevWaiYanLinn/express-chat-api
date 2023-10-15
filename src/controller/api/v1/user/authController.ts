@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import User from "../../../../model/user";
 import JsonWebToken from "../../../../service/jwt";
 import Hash from "../../../../service/hast";
+
+const accessTokenExpires = () => Math.floor(Date.now() / 1000) + 10 * 60;
+
 export const login = async (
   req: Request,
   res: Response,
@@ -15,17 +18,17 @@ export const login = async (
     }
     const { password: pwd, ...others } = user.toJSON();
     const accessToken = new JsonWebToken({
-      expireIn: "1h",
+      expireIn: 10 * 60,
       payload: others,
     });
     const refreshToken = new JsonWebToken({
       payload: others,
     });
-    return res.status(200).json({
+    res.status(200).json({
       user: others,
       accessToken: accessToken.token,
       refreshToken: refreshToken.token,
-      accessTokenExpires: Date.now() + 45 * 60 * 1000,
+      accessTokenExpires: accessTokenExpires(),
     });
   } catch (error) {
     next(error);
@@ -52,12 +55,12 @@ export const refresh = async (
     }
     const newAccessToken = new JsonWebToken({
       payload: user?.toJSON(),
-      expireIn: "1h",
+      expireIn: 10 * 60,
     });
     res.status(200).json({
       accessToken: newAccessToken.token,
       user: decoded,
-      accessTokenExpires: Date.now() + 45 * 60 * 1000,
+      accessTokenExpires: accessTokenExpires(),
     });
   } catch (error) {
     next(error);
