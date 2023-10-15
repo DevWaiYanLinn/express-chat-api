@@ -26,12 +26,6 @@ const app: Express = express();
 const server = createServer(app);
 createSocketServer(server);
 
-app.use((req, res, next) => {
-  console.log(req.url);
-  next();
-});
-
-// middleware
 app.use(
   cors({
     origin: "http://192.168.99.139:3000",
@@ -41,14 +35,15 @@ app.use(express.json());
 
 app.get("/avatar/:id([1-5])", (req, res) => {
   const avatars = ["bear", "cat", "rabbit", "tiger", "bear", "cat", "rabbit"];
-  return res.sendFile(
+  res.sendFile(
     path.join(__dirname, `public/avatar/${avatars[Number(req.params.id)]}.png`)
   );
 });
+
 app.use("/api/v1", v1UserRoute);
+
 app.use((error: Errback, req: Request, res: Response) => {
-  console.log(error);
-  return res.status(500).json("error");
+  res.status(500).json("error");
 });
 
 connectDb();
