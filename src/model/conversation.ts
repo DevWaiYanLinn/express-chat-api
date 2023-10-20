@@ -1,15 +1,34 @@
 import { Schema, model } from "mongoose";
-const userSchema = new Schema(
+const conversationSchema = new Schema(
   {
-    members: [{ type: Schema.Types.ObjectId, ref: "user" }],
-    lastMessage: { type: Schema.Types.ObjectId, ref: "message", default: null },
-    lastMessageAt: { type: Date, default: null },
+    members: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+      },
+    ],
   },
   {
+    toJSON: {
+      virtuals: true,
+      getters: true,
+      transform: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
     timestamps: true,
   }
 );
 
-const Conversation = model("conversation", userSchema);
+conversationSchema.virtual("lastMessage", {
+  ref: "message",
+  localField: "_id",
+  foreignField: "conversation",
+  limit: 1,
+  justOne: true,
+});
+
+const Conversation = model("conversation", conversationSchema);
 
 export default Conversation;

@@ -7,12 +7,12 @@ export const store = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { conversation, sender, receiver, content, messageAt } = req.body;
+  const { conversation, from, to, content, messageAt } = req.body;
   try {
     const newMessage = new Message({
       conversation,
-      sender,
-      receiver,
+      from,
+      to,
       content,
       messageAt,
     });

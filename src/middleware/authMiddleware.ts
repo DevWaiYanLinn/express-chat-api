@@ -12,6 +12,6 @@ export const authenticated = async (
     req.user = await JsonWebToken.verify(token);
     next();
   } catch (error) {
-    res.json(401).json({ message: "Access Token Expire" });
+    next(error)
   }
 };

@@ -1,5 +1,5 @@
-import Conversation from "../model/conversation";
-import User from "../model/user";
+import Conversation from "../../model/conversation";
+import User from "../../model/user";
 
 export default async () => {
   const users = await User.insertMany([
@@ -84,14 +84,13 @@ export default async () => {
       }`,
     },
   ]);
-
+  let userList = [...users];
   let conversations: any = [];
-  users.forEach((user: any) => {
-    const others = users
-      .filter((f: any) => f._id !== user._id)
-      .map((m: any) => {
-        return { members: [user._id, m._id] };
-      });
+  users.forEach((user: any, index: number) => {
+    userList.splice(index, 1);
+    const others = userList.map((m: any) => {
+      return { members: [user._id, m._id] };
+    });
     conversations = [...conversations, ...others];
   });
 

@@ -6,20 +6,35 @@ export const getAll = async (
   res: Response,
   next: NextFunction
 ) => {
+  const user = req.user;
   const limit = Number(req.query.limit || 15);
   const skip = Number(req.query.skip || 0);
-  const conversations = await Conversation.find({
-    members: {
-      $in: [req.user._id],
-    },
-  })
-    .populate(["members", "lastMessage"])
-    .sort({ lastMessageAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .allowDiskUse(true)
-    .exec();
-  res.status(200).json(conversations);
+  try {
+    let conversations = await Conversation.find({
+      members: {
+        $in: user._id,
+      },
+    })
+      .sort({ lastMessageAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate([
+        {
+          path: "members",
+          select: "-password -createdAt -updatedAt",
+        },
+        {
+          path: "lastMessage",
+          options: {
+            sort: { messageAt: -1 },
+          },
+        },
+      ])
+      .exec();
+    res.status(200).json(conversations)
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const conversationMessages = async (
