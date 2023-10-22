@@ -3,7 +3,7 @@ import { createAdapter as redisAdapter } from "@socket.io/redis-adapter";
 import express, { Express, Request, Response, Errback } from "express";
 import * as dotenv from "dotenv";
 import { createServer } from "http";
-import connectDb, { pubClient, subClient } from "./database";
+import connectDb, { pubClient, subClient } from "./database/database";
 import cors from "cors";
 import v1UserRoute from "./routes/api/v1/route";
 import path from "path";
