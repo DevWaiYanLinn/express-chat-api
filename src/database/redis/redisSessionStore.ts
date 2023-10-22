@@ -8,14 +8,14 @@ export type Tsession = {
 export class RedisSessionStore {
   redisClient: RedisClientType;
   constructor(redisClient: RedisClientType) {
-    this.redisClient = redisClient
+    this.redisClient = redisClient;
   }
 
   findSession(id: string) {
     return this.redisClient.hGetAll(`session:${id}`);
   }
 
-  async findAllSession() {
+  async findAllSession(cb: CallableFunction) {
     const sessions = [];
     for await (const key of this.redisClient.scanIterator({
       MATCH: "session:*",
@@ -24,20 +24,22 @@ export class RedisSessionStore {
       const value = await this.redisClient.hGetAll(key);
       sessions.push(value);
     }
-    return sessions
+    cb(sessions);
   }
 
   async matchSession() {
-    for await (const { field, value } of this.redisClient.hScanIterator('0')) {
-      console.log(field)
+    for await (const { field, value } of this.redisClient.hScanIterator("0")) {
+      console.log(field);
     }
   }
 
-  async saveSession(id: string, session: Tsession) {
-    return this.redisClient
-      .multi()
-      .hSet(`session:${id}`, session)
-      .expire(`session:${id}`, SESSION_TTL)
-      .exec();
+  saveSession(id: string, session: Tsession) {
+    if (id && session) {
+      this.redisClient
+        .multi()
+        .hSet(`session:${id}`, session)
+        .expire(`session:${id}`, SESSION_TTL)
+        .exec();
+    }
   }
 }

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import Message from "../../../../model/message";
-import { eventEmitter } from "../../../../model/socketAdapterCollection";
-import Conversation from "../../../../model/conversation";
+import Message from "../../../model/message";
+import Conversation from "../../../model/conversation";
 export const store = async (
   req: Request,
   res: Response,
@@ -16,16 +15,13 @@ export const store = async (
       content,
       messageAt,
     });
-    await Conversation.findByIdAndUpdate(
-      { _id: conversation },
-      {
-        lastMessage: newMessage._id,
-        lastMessageAt: messageAt,
-      }
-    );
+    await Conversation.findByIdAndUpdate(conversation, {
+      lastMessage: newMessage._id,
+      lastMessageAt: messageAt,
+    });
     await newMessage.save();
-    const emitter = eventEmitter();
-    emitter.emit(`${conversation}`, newMessage);
+    // const emitter = eventEmitter();
+    // emitter.emit(`${conversation}`, newMessage);
     res.status(200).json("true");
   } catch (error) {
     next(error);

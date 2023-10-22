@@ -3,10 +3,10 @@ import {
   login,
   refresh,
   register,
-} from "../../../../../controller/api/v1/user/authController";
-import validator from "../../../../../validator";
-import userValidator from "../../../../../validator/userValidator";
-import authValidator from "../../../../../validator/authValidator";
+} from "../../../../controller/api/v1/authController";
+import validator from "../../../../validator/validator";
+import userValidator from "../../../../validator/userValidator";
+import authValidator from "../../../../validator/authValidator";
 const route = Router();
 
 route.post("/login", validator(authValidator), login);

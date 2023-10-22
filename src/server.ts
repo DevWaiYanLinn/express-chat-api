@@ -5,7 +5,7 @@ import * as dotenv from "dotenv";
 import { createServer } from "http";
 import connectDb, { pubClient, subClient } from "./database";
 import cors from "cors";
-import v1UserRoute from "./routes/api/v1/user";
+import v1UserRoute from "./routes/api/v1/route";
 import path from "path";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
@@ -15,14 +15,13 @@ import {
   ServerToClientEvents,
   SocketData,
 } from "socket";
-import socketAdapterCollection from "./model/socketAdapterCollection";
 import { RedisSessionStore } from "./database/redis/redisSessionStore";
-import { randomUUID } from "crypto";
-import seeder from "./database/mongo/seeder";
+import Conversation from "./model/conversation";
+import Message from "./model/message";
 
 dotenv.config();
 
-const port = process.env.PORT;
+const port = process.env.APP_PORT;
 const hostName: any = "192.168.99.139";
 
 const app: Express = express();
@@ -44,6 +43,16 @@ app.use(
     origin: "http://192.168.99.139:3000",
   })
 );
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(`Request to ${req.originalUrl} took ${duration}ms`);
+  });
+  next();
+});
+
 app.use(express.json());
 
 app.get("/avatar/:id([1-5])", (req, res) => {
@@ -74,13 +83,20 @@ mongoose.connection.once("connected", async () => {
   }
 
   io.adapter(
-    mongoAdapter(socketAdapterCollection(), {
-      addCreatedAtField: true,
-    })
+    mongoAdapter(
+      mongoose.connection.db.collection("socket.io-adapter-events"),
+      {
+        addCreatedAtField: true,
+      }
+    )
   );
 
   io.adapter(redisAdapter(pubClient, subClient));
-  pubClient.flushAll();
+
+  if (process.env.APP_ENV === "development") {
+    pubClient.flushAll();
+  }
+
   server.listen(port, hostName, () => {
     console.log(`⚡️[server]: Server is running at http://${hostName}:${port}`);
   });
@@ -89,53 +105,72 @@ mongoose.connection.once("connected", async () => {
 const sessionStore = new RedisSessionStore(pubClient as any);
 
 io.use(async (socket, next) => {
-  const { sessionId, userId } = socket.handshake.auth;
+  const { userId } = socket.handshake.auth;
 
-  if (sessionId) {
-    const session = await sessionStore.findSession(sessionId);
+  if (!userId) {
+    next(new Error("Socket Error"));
+  }
 
-    if (Object.keys(session).length) {
-      socket.data = {
-        sessionId,
-        userId: session.userId,
-      };
-
-      return next();
-    }
+  const session = await sessionStore.findSession(userId);
+  if (Object.keys(session).length) {
+    socket.data = {
+      userId,
+    };
+    return next();
   }
 
   socket.data = {
-    sessionId: randomUUID().toString(),
     userId: userId,
   };
-
   next();
 });
 
 io.on("connection", async (socket) => {
-  await sessionStore.saveSession(socket.data.sessionId, {
+  sessionStore.saveSession(socket.data.userId, {
     userId: socket.data.userId,
     connected: 1,
   });
 
-  socket.emit("session", socket.data);
-
   socket.join(socket.data.userId);
 
-  const users = await sessionStore.findAllSession();
+  socket.on(
+    "send_message",
 
-  socket.emit("users", users);
+    async ({ conversation, from, to, content, messageAt }) => {
+      const newMessage = new Message({
+        conversation,
+        from,
+        to,
+        content,
+        messageAt,
+      });
+      await newMessage.save();
+      await Conversation.findByIdAndUpdate(
+        { _id: conversation },
+        {
+          lastMessageAt: messageAt,
+        }
+      );
+
+      io.to(from).to(to).emit("send_message", {
+        _id: newMessage._id.toString(),
+        conversation,
+        from,
+        to,
+        content,
+        messageAt,
+      });
+    }
+  );
 
   socket.on("disconnect", async () => {
     const allSocket = await io.in(socket.data.userId).fetchSockets();
-
-    if (!allSocket.length) {
-      await sessionStore.saveSession(socket.data.sessionId, {
+    if (allSocket.length === 0) {
+      sessionStore.saveSession(socket.data.userId, {
         userId: socket.data.userId,
         connected: 0,
       });
-
-      socket.broadcast.emit("user_disconnected", socket.data.userId);
+      socket.broadcast.emit("user_disconnect", socket.data.userId);
     }
   });
 });

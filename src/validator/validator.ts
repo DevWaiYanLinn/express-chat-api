@@ -8,7 +8,7 @@ export default (schema: any) => {
       const mapError = err.details.map((e: any) => {
         return { [e.context.label]: e.message };
       });
-      return res.status(422).json(mapError);
+      res.status(422).json(mapError);
     }
   };
 };

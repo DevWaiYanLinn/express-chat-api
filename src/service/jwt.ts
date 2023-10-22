@@ -4,7 +4,7 @@ class JsonWebToken {
   private _token: string | null = null;
   private _expireIn: any = null;
 
-  constructor({ expireIn, payload }:any) {
+  constructor({ expireIn, payload }: any) {
     this._expireIn = expireIn || null;
     this.generateToken(payload);
   }

@@ -7,12 +7,11 @@ const conversationSchema = new Schema(
         ref: "user",
       },
     ],
+    lastMessageAt: { type: Date, default: null },
   },
   {
     toJSON: {
       virtuals: true,
-      getters: true,
-      transform: true,
     },
     toObject: {
       virtuals: true,
@@ -20,15 +19,12 @@ const conversationSchema = new Schema(
     timestamps: true,
   }
 );
-
-conversationSchema.virtual("lastMessage", {
+conversationSchema.virtual("messages", {
   ref: "message",
   localField: "_id",
   foreignField: "conversation",
-  limit: 1,
-  justOne: true,
+  perDocumentLimit: 15,
 });
-
 const Conversation = model("conversation", conversationSchema);
 
 export default Conversation;
