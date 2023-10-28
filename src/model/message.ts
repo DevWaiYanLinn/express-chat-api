@@ -9,10 +9,18 @@ const userSchema = new Schema(
     },
     from: { type: Schema.Types.ObjectId, ref: "user", required: true },
     to: { type: Schema.Types.ObjectId, ref: "user", required: true },
-    content: { type: String, reqired: true },
+    content: { type: String, required: true },
     messageAt: { type: Date, required: true },
   },
   {
+    toJSON: {
+      getters: true,
+      virtuals: true,
+    },
+    toObject: {
+      getters: true,
+      virtuals: true,
+    },
     timestamps: true,
   }
 );

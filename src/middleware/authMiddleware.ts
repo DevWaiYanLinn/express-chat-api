@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import JsonWebToken from "../service/jwt";
+import User from "../model/user";
 
 export const authenticated = async (
   req: Request,
@@ -7,11 +8,15 @@ export const authenticated = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) throw new Error("Token Error");
-    req.user = await JsonWebToken.verify(token);
+    const token = req.headers.authorization?.split(" ")[1] || "";
+    const decoded: any = await JsonWebToken.verify(token);
+    const user = await User.findById(decoded._id)
+      .select("-createdAt -updatedAt -password")
+      .exec();
+    if (!user) throw new Error("Token Error");
+    req.user = user;
     next();
   } catch (error) {
-    next(error)
+    next(error);
   }
 };

@@ -1,6 +1,8 @@
+import { RedisSessionStore } from "./../../../database/redis/redisSessionStore";
 import { Request, Response, NextFunction } from "express";
-import Conversation from "../../../model/conversation";
+import Conversation, { conversationSchema } from "../../../model/conversation";
 import Message from "../../../model/message";
+import { pubClient } from "../../../database/database";
 export const getAll = async (
   req: Request,
   res: Response,
@@ -31,19 +33,7 @@ export const getAll = async (
         },
       ])
       .exec();
-
-    const mapConversations = conversations.map((c) => {
-      const conversation = c.toObject();
-      const index = conversation.members.findIndex(
-        (m) => m._id.toString() !== user._id
-      );
-      return {
-        ...conversation,
-        from: conversation.members[1 - index],
-        to: conversation.members[index],
-      };
-    });
-    res.status(200).json(mapConversations);
+    res.status(200).json(conversations);
   } catch (error) {
     next(error);
   }
@@ -77,11 +67,14 @@ export const conversationMessage = async (
   const limit = Number(req.query.limit || 15);
   const skip = Number(req.query.skip || 0);
   try {
+    const sessionStore = new RedisSessionStore(pubClient as any);
+
     const conversations = await Conversation.find({
       members: {
         $in: user._id,
       },
     })
+      .select("-createdAt -updatedAt")
       .sort({ lastMessageAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -92,25 +85,24 @@ export const conversationMessage = async (
         },
         {
           path: "messages",
+          select: "-createdAt -updatedAt",
           options: {
             sort: { messageAt: -1 },
           },
         },
       ])
+      .transform(async (res) => {
+        return await Promise.all(
+          res.map(async (c) => {
+            c = c.toObject();
+            const session = await sessionStore.findSession(c.to.id);
+            c.to.connected = !!session?.connected;
+            return c;
+          })
+        );
+      })
       .exec();
-
-    const mapConversations = conversations.map((c) => {
-      const conversation = c.toObject();
-      const index = conversation.members.findIndex(
-        (m) => m._id.toString() !== user._id
-      );
-      return {
-        ...conversation,
-        from: conversation.members[1 - index],
-        to: conversation.members[index],
-      };
-    });
-    res.status(200).json(mapConversations);
+    res.status(200).json(conversations);
   } catch (error) {
     next(error);
   }

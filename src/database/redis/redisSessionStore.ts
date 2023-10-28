@@ -27,12 +27,6 @@ export class RedisSessionStore {
     cb(sessions);
   }
 
-  async matchSession() {
-    for await (const { field, value } of this.redisClient.hScanIterator("0")) {
-      console.log(field);
-    }
-  }
-
   saveSession(id: string, session: Tsession) {
     if (id && session) {
       this.redisClient

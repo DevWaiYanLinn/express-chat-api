@@ -1,30 +1,55 @@
-import { Schema, model } from "mongoose";
-const conversationSchema = new Schema(
+import { Model, Schema, model } from "mongoose";
+import { IUser } from "./user";
+
+interface IConversation {
+  members: Array<any>;
+  lastMessageAt: Date;
+}
+
+type Connected = Omit<IUser, "password"> & {
+  connected: boolean;
+};
+
+interface FromTo {
+  from: Connected;
+  to: Connected;
+}
+
+type TModel = Model<IConversation, {}, FromTo>;
+
+const schema = new Schema<IConversation, TModel, FromTo>(
   {
     members: [
       {
         type: Schema.Types.ObjectId,
         ref: "user",
+        unique: true,
       },
     ],
-    lastMessageAt: { type: Date, default: null },
+    lastMessageAt: { type: Date, default: Date.now() },
   },
   {
     toJSON: {
+      getters: true,
       virtuals: true,
     },
     toObject: {
+      getters: true,
       virtuals: true,
     },
     timestamps: true,
   }
 );
-conversationSchema.virtual("messages", {
+schema.virtual("messages", {
   ref: "message",
   localField: "_id",
   foreignField: "conversation",
   perDocumentLimit: 15,
+  get: (m: Array<any>) => m.reverse(),
 });
-const Conversation = model("conversation", conversationSchema);
+
+export const conversationSchema = schema;
+
+const Conversation = model("conversation", schema);
 
 export default Conversation;
