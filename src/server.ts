@@ -108,7 +108,7 @@ io.use(async (socket, next) => {
   const { userId } = socket.handshake.auth;
 
   if (!userId) {
-    next(new Error("Socket Error"));
+    return next(new Error("Socket Error"));
   }
 
   const session = await sessionStore.findSession(userId);
@@ -145,7 +145,7 @@ io.on("connection", async (socket) => {
         messageAt,
       });
       await newMessage.save();
-      await Conversation.findByIdAndUpdate(
+      await Conversation.findOneAndUpdate(
         { _id: conversation },
         {
           lastMessageAt: messageAt,

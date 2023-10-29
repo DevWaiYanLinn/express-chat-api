@@ -1,9 +1,10 @@
-import { Model, Schema, model } from "mongoose";
+import mongoose, { Model, Schema, model } from "mongoose";
 import { IUser } from "./user";
 
 interface IConversation {
   members: Array<any>;
   lastMessageAt: Date;
+  time: string | null;
 }
 
 type Connected = Omit<IUser, "password"> & {
@@ -26,7 +27,8 @@ const schema = new Schema<IConversation, TModel, FromTo>(
         unique: true,
       },
     ],
-    lastMessageAt: { type: Date, default: Date.now() },
+    lastMessageAt: { type: Date, default: null },
+    time: { type: String, default: null },
   },
   {
     toJSON: {

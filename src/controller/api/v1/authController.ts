@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import User from "../../../model/user";
-import JsonWebToken from "../../../service/jwt";
-import Hash from "../../../service/hash";
-
-const accessTokenExpires = () => Math.floor(Date.now() / 1000) + 10 * 60;
-const TOKEN_TTL = 300 * 60;
+import JsonWebToken from "../../../service/jwt-service";
+import Hash from "../../../service/hash-service";
 
 export const login = async (
   req: Request,
@@ -15,32 +12,36 @@ export const login = async (
   try {
     const user = await User.findOne({ email }).exec();
     if (!user || !(await Hash.compare(password, user.password))) {
-      return res.status(400).json({ message: "not found" });
+      return res.status(400).json({ message: "Not found" });
     }
-    const { password: pwd, ...others } = user.toJSON();
-    const accessToken = new JsonWebToken({
-      expireIn: TOKEN_TTL,
-      payload: others,
-    });
-    const refreshToken = new JsonWebToken({
-      payload: others,
-    });
+    const { password: pwd, ...payload } = user.toJSON();
+    const jwt = new JsonWebToken();
+    const { accessToken, accessTokenExpires } = jwt.createAccessToken(payload);
+    const refreshToken = jwt.createRefreshToken(payload);
     res.status(200).json({
-      user: others,
-      accessToken: accessToken.token,
-      refreshToken: refreshToken.token,
-      accessTokenExpires: accessTokenExpires(),
+      user: payload,
+      accessToken,
+      refreshToken,
+      accessTokenExpires,
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const register = async (req: Request, res: Response) => {
-  const { name, email, password, avatar } = req.body;
-  const user = new User({ name, email, password, avatar });
-  await user.save();
-  res.status(200).json({ message: "success" });
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name, email, password, avatar } = req.body;
+    const user = new User({ name, email, password, avatar });
+    await user.save();
+    res.status(200).json({ message: "success" });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const refresh = async (
@@ -50,18 +51,17 @@ export const refresh = async (
 ) => {
   try {
     const decoded: any = await JsonWebToken.verify(req.body.refreshToken);
-    const user = await User.findById(decoded._id).exec();
+    const user = await User.findById(decoded._id).select("-password").exec();
     if (!user) {
-      return res.status(400).json({ message: "Not Found" });
+      throw new Error("Refresh Token Error");
     }
-    const newAccessToken = new JsonWebToken({
-      payload: user.toJSON(),
-      expireIn: TOKEN_TTL,
-    });
+    const jwt = new JsonWebToken();
+    const payload = user.toObject();
+    const { accessToken, accessTokenExpires } = jwt.createAccessToken(payload);
     res.status(200).json({
-      accessToken: newAccessToken.token,
-      user: decoded,
-      accessTokenExpires: accessTokenExpires(),
+      accessToken,
+      user: payload,
+      accessTokenExpires,
     });
   } catch (error) {
     next(error);

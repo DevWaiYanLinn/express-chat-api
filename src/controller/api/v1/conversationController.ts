@@ -1,6 +1,6 @@
 import { RedisSessionStore } from "./../../../database/redis/redisSessionStore";
 import { Request, Response, NextFunction } from "express";
-import Conversation, { conversationSchema } from "../../../model/conversation";
+import Conversation from "../../../model/conversation";
 import Message from "../../../model/message";
 import { pubClient } from "../../../database/database";
 export const getAll = async (
@@ -13,9 +13,7 @@ export const getAll = async (
   const skip = Number(req.query.skip || 0);
   try {
     const conversations = await Conversation.find({
-      members: {
-        $in: user._id,
-      },
+      members: user._id,
     })
       .sort({ lastMessageAt: -1 })
       .skip(skip)
@@ -70,9 +68,7 @@ export const conversationMessage = async (
     const sessionStore = new RedisSessionStore(pubClient as any);
 
     const conversations = await Conversation.find({
-      members: {
-        $in: user._id,
-      },
+      members: user._id,
     })
       .select("-createdAt -updatedAt")
       .sort({ lastMessageAt: -1 })

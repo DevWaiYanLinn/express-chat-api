@@ -10,7 +10,9 @@ const route = Router();
 
 route.use(authenticated, (req, res, next) => {
   conversationSchema.virtual("from").get(function () {
-    return req.user;
+    return this.members.find(
+      (m) => m._id.toString() === req.user._id.toString()
+    );
   });
   conversationSchema.virtual("to").get(function () {
     return this.members.find(
