@@ -67,7 +67,7 @@ app.use("/api/v1", v1UserRoute);
 app.use(emailRoute);
 
 app.use((error: Errback, req: Request, res: Response) => {
-  res.status(500).json("error");
+  res.status(500).json(error);
 });
 
 connectDb();

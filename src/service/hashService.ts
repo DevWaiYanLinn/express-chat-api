@@ -2,8 +2,8 @@ import * as bcrypt from "bcrypt";
 class Hash {
   algorithm = "bcrypt";
 
-  static async compare(a: string, b: string): Promise<boolean> {
-    return await bcrypt.compare(a, b);
+  static compare(a: string, b: string): Promise<boolean> {
+    return bcrypt.compare(a, b);
   }
 }
 
