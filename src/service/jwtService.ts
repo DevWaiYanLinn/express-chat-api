@@ -17,6 +17,10 @@ class JsonWebToken {
     return jwt.sign(payload, "secret", { expiresIn: "365d" });
   }
 
+  public createEmailConfirmToken(payload: any): string {
+    return jwt.sign(payload, "secret", { expiresIn: "1h" });
+  }
+
   static verify(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jwt.verify(token, "secret", (err, decoded) => {

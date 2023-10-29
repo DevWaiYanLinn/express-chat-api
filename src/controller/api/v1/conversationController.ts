@@ -70,7 +70,6 @@ export const conversationMessage = async (
     const conversations = await Conversation.find({
       members: user._id,
     })
-      .select("-createdAt -updatedAt")
       .sort({ lastMessageAt: -1 })
       .skip(skip)
       .limit(limit)

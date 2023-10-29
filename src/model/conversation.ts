@@ -24,7 +24,6 @@ const schema = new Schema<IConversation, TModel, FromTo>(
       {
         type: Schema.Types.ObjectId,
         ref: "user",
-        unique: true,
       },
     ],
     lastMessageAt: { type: Date, default: null },
@@ -47,7 +46,7 @@ schema.virtual("messages", {
   localField: "_id",
   foreignField: "conversation",
   perDocumentLimit: 15,
-  get: (m: Array<any>) => m.reverse(),
+  get: (m: Array<any>) => m?.reverse(),
 });
 
 export const conversationSchema = schema;

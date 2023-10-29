@@ -6,6 +6,7 @@ import { createServer } from "http";
 import connectDb, { pubClient, subClient } from "./database/database";
 import cors from "cors";
 import v1UserRoute from "./routes/api/v1/route";
+import emailRoute from "./routes/page/email";
 import path from "path";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
@@ -18,7 +19,7 @@ import {
 import { RedisSessionStore } from "./database/redis/redisSessionStore";
 import Conversation from "./model/conversation";
 import Message from "./model/message";
-
+import dayjs from "./util/dayjs";
 dotenv.config();
 
 const port = process.env.APP_PORT;
@@ -63,6 +64,7 @@ app.get("/avatar/:id([1-5])", (req, res) => {
 });
 
 app.use("/api/v1", v1UserRoute);
+app.use(emailRoute);
 
 app.use((error: Errback, req: Request, res: Response) => {
   res.status(500).json("error");
@@ -96,7 +98,6 @@ mongoose.connection.once("connected", async () => {
   if (process.env.APP_ENV === "development") {
     pubClient.flushAll();
   }
-
   server.listen(port, hostName, () => {
     console.log(`⚡️[server]: Server is running at http://${hostName}:${port}`);
   });
@@ -149,8 +150,9 @@ io.on("connection", async (socket) => {
         { _id: conversation },
         {
           lastMessageAt: messageAt,
+          time: dayjs(messageAt).format("LT"),
         }
-      );
+      ).exec();
 
       io.to(from).to(to).emit("send_message", {
         _id: newMessage._id.toString(),

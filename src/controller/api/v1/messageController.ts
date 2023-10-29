@@ -20,8 +20,6 @@ export const store = async (
       lastMessageAt: messageAt,
     });
     await newMessage.save();
-    // const emitter = eventEmitter();
-    // emitter.emit(`${conversation}`, newMessage);
     res.status(200).json("true");
   } catch (error) {
     next(error);
