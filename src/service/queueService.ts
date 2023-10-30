@@ -2,6 +2,8 @@ import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import Mailer from "./mailService";
 import config from "../config/config";
+import ConfirmationMail from "../mail/confirmationMail";
+import JsonWebToken from "./jwtService";
 
 const connection = {
   host: config.redis.host,
@@ -13,10 +15,13 @@ export const emailQueue = new Queue("email", { connection });
 const worker = new Worker(
   "email",
   async (job) => {
-    const {
-      data: { to, mail },
-    }: { data: { to: string; mail: MailInterface } } = job;
-    await Mailer.send(to, mail);
+    const { data } = job;
+    if (data.type === "CONFIRM_EMAIL") {
+      const jwt = new JsonWebToken();
+      const emailConfirmToken = jwt.createEmailConfirmToken({ email: data.to });
+      const mail = new ConfirmationMail({ emailConfirmToken });
+      await Mailer.send(data.to, mail);
+    }
   },
   { connection }
 );

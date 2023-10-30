@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import config from "../config/config";
+import { MailInterface } from "../types";
 
 const tranSporter = nodemailer.createTransport({
   service: config.mail.service,
@@ -20,8 +21,9 @@ class Mailer {
         {
           ...mailOptions,
           to,
+          subject: mail.subject(),
           text: mail.text(),
-          html: await mail.htmlBody(),
+          html: await mail.html(),
         },
         function (err, info) {
           if (err) {

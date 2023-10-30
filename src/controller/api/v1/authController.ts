@@ -18,12 +18,10 @@ export const login = async (
     }
 
     if (!user.verified) {
-      return res
-        .status(200)
-        .json({
-          message:
-            "Your email address needs to be confirmed before you can access your accoun",
-        });
+      return res.status(200).json({
+        message:
+          "Your email address needs to be confirmed before you can access your accoun",
+      });
     }
 
     const { password: pwd, ...payload } = user.toObject();
@@ -50,13 +48,9 @@ export const register = async (
     const { name, email, password, avatar } = req.body;
     const user = new User({ name, email, password, avatar });
     await user.save();
-    const jwt = new JsonWebToken();
-    const emailConfirmToken = jwt.createEmailConfirmToken({
-      email: user.email,
-    });
     emailQueue.add("email", {
-      to: user.email,
-      mail: new ConfirmationMail({ emailConfirmToken: emailConfirmToken }),
+      to: email,
+      type: "CONFIRM_EMAIL",
     });
     res.status(200).json({ message: "success" });
   } catch (error) {

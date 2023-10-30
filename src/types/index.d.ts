@@ -1,4 +1,5 @@
-interface MailInterface {
-  text(): string | undefined;
-  htmlBody(): Promise<string>;
+export interface MailInterface {
+  text: () => string | undefined;
+  html: () => Promise<string>;
+  subject:() => string
 }

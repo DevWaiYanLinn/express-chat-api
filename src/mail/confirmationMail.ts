@@ -1,22 +1,27 @@
 import { Edge } from "edge.js";
 import { join } from "path";
+import { MailInterface } from "../types";
 
 type Transcation = {
   emailConfirmToken: string;
 };
 
 class ConfirmationMail implements MailInterface {
-  private transcation: Transcation;
+  public transcation: Transcation;
 
   constructor(transcation: Transcation) {
     this.transcation = transcation;
   }
 
-  text(): string | undefined {
+  public subject() {
+    return "Confirm Your Email";
+  }
+
+  public text(): string | undefined {
     return undefined;
   }
 
-  htmlBody(): Promise<string> {
+  public html(): Promise<string> {
     return new Promise(async (resolve) => {
       const edge = new Edge({ cache: false });
       edge.mount(join(__dirname, "templates"));
