@@ -66,8 +66,10 @@ app.get("/avatar/:id([1-5])", (req, res) => {
 app.use("/api/v1", v1UserRoute);
 app.use(emailRoute);
 
-app.use((error: Errback, req: Request, res: Response) => {
-  res.status(500).json(error);
+app.use((error: any, req: Request, res: Response) => {
+  const httpCode = error.httpCode || 500;
+  const stack = error.statck || "server error";
+  res.status(httpCode).json(stack);
 });
 
 connectDb();

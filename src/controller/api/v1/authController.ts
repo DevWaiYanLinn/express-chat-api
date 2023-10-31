@@ -3,7 +3,8 @@ import User from "../../../model/user";
 import JsonWebToken from "../../../service/jwtService";
 import Hash from "../../../service/hashService";
 import { emailQueue } from "../../../service/queueService";
-import ConfirmationMail from "../../../mail/confirmationMail";
+import { CONFIRM_EMAIL } from "../../../config/config";
+import AppError from "../../../exception/appError";
 
 export const login = async (
   req: Request,
@@ -20,7 +21,7 @@ export const login = async (
     if (!user.verified) {
       return res.status(200).json({
         message:
-          "Your email address needs to be confirmed before you can access your accoun",
+          "Your email address needs to be confirmed before you can access your account.",
       });
     }
 
@@ -50,7 +51,7 @@ export const register = async (
     await user.save();
     emailQueue.add("email", {
       to: email,
-      type: "CONFIRM_EMAIL",
+      type: CONFIRM_EMAIL,
     });
     res.status(200).json({ message: "success" });
   } catch (error) {
@@ -67,7 +68,7 @@ export const refresh = async (
     const decoded: any = await JsonWebToken.verify(req.body.refreshToken);
     const user = await User.findById(decoded._id).select("-password").exec();
     if (!user) {
-      throw new Error("Refresh Token Error");
+      throw new AppError("Refresh Token Error", 422, "Token expires");
     }
     const jwt = new JsonWebToken();
     const payload = user.toObject();

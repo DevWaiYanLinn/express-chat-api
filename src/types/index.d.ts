@@ -3,3 +3,5 @@ export interface MailInterface {
   html: () => Promise<string>;
   subject:() => string
 }
+
+export type HttpCode = 200 | 400 | 422 | 500;

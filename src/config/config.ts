@@ -23,3 +23,5 @@ export default {
     from: env("MAIL_FROM", "FlirtFlow App"),
   },
 };
+
+export const CONFIRM_EMAIL = "CONFIRM_EMAIL";

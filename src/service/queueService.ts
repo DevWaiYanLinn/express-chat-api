@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import Mailer from "./mailService";
-import config from "../config/config";
+import config, { CONFIRM_EMAIL } from "../config/config";
 import ConfirmationMail from "../mail/confirmationMail";
 import JsonWebToken from "./jwtService";
 
@@ -16,7 +16,7 @@ const worker = new Worker(
   "email",
   async (job) => {
     const { data } = job;
-    if (data.type === "CONFIRM_EMAIL") {
+    if (data.type === CONFIRM_EMAIL) {
       const jwt = new JsonWebToken();
       const emailConfirmToken = jwt.createEmailConfirmToken({ email: data.to });
       const mail = new ConfirmationMail({ emailConfirmToken });

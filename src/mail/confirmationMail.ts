@@ -7,7 +7,7 @@ type Transcation = {
 };
 
 class ConfirmationMail implements MailInterface {
-  public transcation: Transcation;
+  public readonly transcation: Transcation;
 
   constructor(transcation: Transcation) {
     this.transcation = transcation;

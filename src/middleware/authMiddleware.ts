@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import JsonWebToken from "../service/jwtService";
 import User from "../model/user";
+import AppError from "../exception/appError";
 
 export const authenticated = async (
   req: Request,
@@ -13,7 +14,12 @@ export const authenticated = async (
     const user = await User.findById(decoded._id)
       .select("-createdAt -updatedAt -password")
       .exec();
-    if (!user) throw new Error("Token Error");
+    if (!user)
+      throw new AppError(
+        "Auth Token Error",
+        422,
+        "Token expires"
+      );
     req.user = user;
     next();
   } catch (error) {
