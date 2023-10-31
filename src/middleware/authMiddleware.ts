@@ -17,7 +17,7 @@ export const authenticated = async (
     if (!user)
       throw new AppError(
         "Auth Token Error",
-        422,
+        400,
         "Token expires"
       );
     req.user = user;

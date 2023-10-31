@@ -68,7 +68,7 @@ export const refresh = async (
     const decoded: any = await JsonWebToken.verify(req.body.refreshToken);
     const user = await User.findById(decoded._id).select("-password").exec();
     if (!user) {
-      throw new AppError("Refresh Token Error", 422, "Token expires");
+      throw new AppError("Refresh Token Error", 400, "Token expires");
     }
     const jwt = new JsonWebToken();
     const payload = user.toObject();
