@@ -1,30 +1,38 @@
 import * as jwt from "jsonwebtoken";
+import config from "../config/config";
 
-class JsonWebToken {
-  constructor() {}
+type AnyObject = {
+  [key: string]: any;
+};
 
-  public createAccessToken(payload: any): {
+class JsonWebToken<T> {
+  data: AnyObject;
+  constructor(data: AnyObject) {
+    this.data = data;
+  }
+
+  public createAccessToken(): {
     accessToken: string;
     accessTokenExpires: number;
   } {
     return {
-      accessToken: jwt.sign(payload, "secret", { expiresIn: 60 * 60 }),
+      accessToken: jwt.sign(this.data, config.jwt.secret, { expiresIn: 60 * 60 }),
       accessTokenExpires: Math.floor(Date.now() / 1000) + 45 * 60,
     };
   }
 
-  public createRefreshToken(payload: any): string {
-    return jwt.sign(payload, "secret", { expiresIn: "365d" });
+  public createRefreshToken(): string {
+    return jwt.sign(this.data, config.jwt.secret, { expiresIn: "365d" });
   }
 
-  public createEmailConfirmToken(payload: any): string {
-    return jwt.sign(payload, "secret", { expiresIn: "1h" });
+  public createEmailConfirmToken(): string {
+    return jwt.sign(this.data, config.jwt.secret, { expiresIn: "1h" });
   }
 
-  static verify(token: string): Promise<any> {
+  static verify<T>(token: string): Promise<T> {
     return new Promise((resolve, reject) => {
-      jwt.verify(token, "secret", (err, decoded) => {
-        if (!err) resolve(decoded);
+      jwt.verify(token, config.jwt.secret, (err, decoded) => {
+        if (!err) resolve(decoded as T);
         else reject(err);
       });
     });

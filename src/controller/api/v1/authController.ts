@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import User from "../../../model/user";
+import User, { IUser } from "../../../model/user";
 import JsonWebToken from "../../../service/jwtService";
 import Hash from "../../../service/hashService";
 import { emailQueue } from "../../../service/queueService";
@@ -24,13 +24,12 @@ export const login = async (
           "Your email address needs to be confirmed before you can access your account.",
       });
     }
-
-    const { password: pwd, ...payload } = user.toObject();
-    const jwt = new JsonWebToken();
-    const { accessToken, accessTokenExpires } = jwt.createAccessToken(payload);
-    const refreshToken = jwt.createRefreshToken(payload);
+    const { password: pwd, ...userData } = user.toObject();
+    const jwt = new JsonWebToken(userData);
+    const { accessToken, accessTokenExpires } = jwt.createAccessToken();
+    const refreshToken = jwt.createRefreshToken();
     res.status(200).json({
-      user: payload,
+      user: userData,
       accessToken,
       refreshToken,
       accessTokenExpires,
@@ -65,17 +64,18 @@ export const refresh = async (
   next: NextFunction
 ) => {
   try {
-    const decoded: any = await JsonWebToken.verify(req.body.refreshToken);
-    const user = await User.findById(decoded._id).select("-password").exec();
+    const decoded: IUser = await JsonWebToken.verify(req.body.refreshToken);
+    const user = await User.findById(decoded.id).select("-password").exec();
     if (!user) {
       throw new AppError("Refresh Token Error", 400, "Token expires");
     }
-    const jwt = new JsonWebToken();
-    const payload = user.toObject();
-    const { accessToken, accessTokenExpires } = jwt.createAccessToken(payload);
+    const userData = user.toObject();
+    const jwt = new JsonWebToken(userData);
+    const { accessToken, accessTokenExpires } = jwt.createAccessToken();
+
     res.status(200).json({
       accessToken,
-      user: payload,
+      user: userData,
       accessTokenExpires,
     });
   } catch (error) {

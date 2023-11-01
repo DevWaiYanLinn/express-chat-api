@@ -20,6 +20,9 @@ import { RedisSessionStore } from "./database/redis/redisSessionStore";
 import Conversation from "./model/conversation";
 import Message from "./model/message";
 import dayjs from "./util/dayjs";
+import AppError from "./exception/appError";
+import JsonWebToken from "./service/jwtService";
+import { IUser } from "./model/user";
 dotenv.config();
 
 const port = process.env.APP_PORT;
@@ -108,37 +111,27 @@ mongoose.connection.once("connected", async () => {
 const sessionStore = new RedisSessionStore(pubClient as any);
 
 io.use(async (socket, next) => {
-  const { userId } = socket.handshake.auth;
-
-  if (!userId) {
-    return next(new Error("Socket Error"));
-  }
-
-  const session = await sessionStore.findSession(userId);
-  if (Object.keys(session).length) {
+  const { token } = socket.handshake.auth;
+  try {
+    const user: IUser = await JsonWebToken.verify(token);
     socket.data = {
-      userId,
+      userId: user.id,
     };
-    return next();
+    await sessionStore.saveSession(socket.data.userId, {
+      userId: socket.data.userId,
+      connected: 1,
+    });
+    next();
+  } catch {
+    next(new AppError("Token Error", 400, "Authentication Failed"));
   }
-
-  socket.data = {
-    userId: userId,
-  };
-  next();
 });
 
 io.on("connection", async (socket) => {
-  sessionStore.saveSession(socket.data.userId, {
-    userId: socket.data.userId,
-    connected: 1,
-  });
-
   socket.join(socket.data.userId);
 
   socket.on(
     "send_message",
-
     async ({ conversation, from, to, content, messageAt }) => {
       const newMessage = new Message({
         conversation,
@@ -157,7 +150,7 @@ io.on("connection", async (socket) => {
       ).exec();
 
       io.to(from).to(to).emit("send_message", {
-        _id: newMessage._id.toString(),
+        _id: newMessage.id,
         conversation,
         from,
         to,
@@ -170,7 +163,7 @@ io.on("connection", async (socket) => {
   socket.on("disconnect", async () => {
     const allSocket = await io.in(socket.data.userId).fetchSockets();
     if (allSocket.length === 0) {
-      sessionStore.saveSession(socket.data.userId, {
+      await sessionStore.saveSession(socket.data.userId, {
         userId: socket.data.userId,
         connected: 0,
       });

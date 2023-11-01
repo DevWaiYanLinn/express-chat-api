@@ -28,12 +28,10 @@ export class RedisSessionStore {
   }
 
   saveSession(id: string, session: Tsession) {
-    if (id && session) {
-      this.redisClient
-        .multi()
-        .hSet(`session:${id}`, session)
-        .expire(`session:${id}`, SESSION_TTL)
-        .exec();
-    }
+    return this.redisClient
+      .multi()
+      .hSet(`session:${id}`, session)
+      .expire(`session:${id}`, SESSION_TTL)
+      .exec();
   }
 }

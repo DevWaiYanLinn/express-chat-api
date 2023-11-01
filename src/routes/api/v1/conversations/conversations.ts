@@ -11,12 +11,12 @@ const route = Router();
 route.use(authenticated, (req, res, next) => {
   conversationSchema.virtual("from").get(function () {
     return this.members.find(
-      (m) => m._id.toString() === req.user._id.toString()
+      (m) => m.id === req.user.id
     );
   });
   conversationSchema.virtual("to").get(function () {
     return this.members.find(
-      (m) => m._id.toString() !== req.user._id.toString()
+      (m) => m.id !== req.user.id
     );
   });
   next();

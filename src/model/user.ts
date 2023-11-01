@@ -18,13 +18,15 @@ const userSchema = new Schema<IUser>(
     verified: { type: Boolean, default: false },
   },
   {
-    timestamps: true,
     toJSON: {
+      getters: true,
       virtuals: true,
     },
     toObject: {
+      getters: true,
       virtuals: true,
     },
+    timestamps: true,
   }
 );
 

@@ -1,14 +1,9 @@
-const env = (key: string, defaultValue: string): string => {
-  if (process.env[key] !== undefined) {
-    return process.env[key] as string;
-  }
-  return defaultValue;
-};
+import { env } from "../util/helper";
 
 export default {
   redis: {
     host: env("REDIS_HOST", "localhost"),
-    port: env("REDIS_PORT", "6379"),
+    port: env("REDIS_PORT", 6379),
   },
   mongodb: {
     url: env(
@@ -18,10 +13,13 @@ export default {
   },
   mail: {
     service: env("MAIL_SERVICE", "gmail"),
-    user: env("MAIL_USER", "waiyanlin.lion@gmail.com"),
-    pass: env("MAIL_PASS", "qgpg avjz oqtw bplx"),
+    user: env("MAIL_USER", "example@gmail.com"),
+    pass: env("MAIL_PASS", "password"),
     from: env("MAIL_FROM", "FlirtFlow App"),
   },
-};
+  jwt: {
+    secret: env("JWT_SECRET", "12345"),
+  },
+} as const;
 
 export const CONFIRM_EMAIL = "CONFIRM_EMAIL";
