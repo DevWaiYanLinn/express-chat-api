@@ -1,4 +1,4 @@
-import { env } from "../util/helper";
+import { env } from "../lib/helper";
 
 export default {
   redis: {

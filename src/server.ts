@@ -19,7 +19,7 @@ import {
 import { RedisSessionStore } from "./database/redis/redisSessionStore";
 import Conversation from "./model/conversation";
 import Message from "./model/message";
-import dayjs from "./util/dayjs";
+import dayjs from "./lib/utility";
 import AppError from "./exception/appError";
 import JsonWebToken from "./service/jwtService";
 import { IUser } from "./model/user";
