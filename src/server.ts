@@ -1,6 +1,6 @@
 import { createAdapter as mongoAdapter } from "@socket.io/mongo-adapter";
 import { createAdapter as redisAdapter } from "@socket.io/redis-adapter";
-import express, { Express, Request, Response, Errback } from "express";
+import express, { Express, Request, Response, Errback, NextFunction } from "express";
 import * as dotenv from "dotenv";
 import { createServer } from "http";
 import connectDb, { pubClient, subClient } from "./database/database";
@@ -22,9 +22,10 @@ import Message from "./model/message";
 import dayjs from "./lib/utility";
 import AppError from "./exception/appError";
 import JsonWebToken from "./service/jwtService";
-import { IUser } from "./model/user";
+import { UserInterface } from "./model/user";
 import { env } from './lib/helper';
 import config from './config/config';
+import { rateLimit } from 'express-rate-limit'
 dotenv.config();
 
 const port = env('APP_PORT', 4000)();
@@ -42,6 +43,14 @@ const io = new Server<
   cors: config.cors
 });
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+})
+
+app.use(limiter)
 app.use(
   cors(config.cors)
 );
@@ -67,16 +76,16 @@ app.get("/avatar/:id([1-5])", (req, res) => {
 app.use("/api/v1", v1UserRoute);
 app.use(emailRoute);
 
-app.use((error: any, req: Request, res: Response) => {
+app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   const httpCode = error.httpCode || 500;
-  const stack = error.statck || "server error";
+  const message = error.name || 'server error';
   if (env('APP_ENV', 'development')() === 'production') {
     const isAppError = error instanceof AppError
     if (!isAppError) {
-        
+
     }
   }
-  res.status(httpCode).json(stack);
+  res.status(httpCode).json({ message });
 });
 
 connectDb();
@@ -117,7 +126,7 @@ const sessionStore = new RedisSessionStore(pubClient as any);
 io.use(async (socket, next) => {
   const { token } = socket.handshake.auth;
   try {
-    const user: IUser = await JsonWebToken.verify(token);
+    const user: UserInterface = await JsonWebToken.verify(token);
     socket.data = {
       userId: user.id,
     };

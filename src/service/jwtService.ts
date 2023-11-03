@@ -5,7 +5,7 @@ type AnyObject = {
   [key: string]: any;
 };
 
-class JsonWebToken<T> {
+class JsonWebToken {
   data: AnyObject;
   constructor(data: AnyObject) {
     this.data = data;

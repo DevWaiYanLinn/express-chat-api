@@ -11,6 +11,7 @@ const userSchema = new Schema(
     to: { type: Schema.Types.ObjectId, ref: "user", required: true },
     content: { type: String, required: true },
     messageAt: { type: Date, required: true },
+    deletedBy: [{ type: Schema.Types.ObjectId, ref: "user" }]
   },
   {
     toJSON: {

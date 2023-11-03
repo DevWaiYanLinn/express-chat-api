@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose";
 
-export interface IUser {
+export interface UserInterface {
   id: string;
   name: string;
   email: string;
@@ -9,7 +9,7 @@ export interface IUser {
   verified: boolean;
 }
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema<UserInterface>(
   {
     name: { type: String, required: true, index: true },
     email: { type: String, required: true, index: { unique: true } },
@@ -30,6 +30,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-const User = model<IUser>("user", userSchema);
+const User = model<UserInterface>("user", userSchema);
 
 export default User;

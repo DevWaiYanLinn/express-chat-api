@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import User, { IUser } from "../../../model/user";
+import User, { UserInterface } from "../../../model/user";
 import JsonWebToken from "../../../service/jwtService";
 import Hash from "../../../service/hashService";
 import { emailQueue } from "../../../service/queueService";
@@ -19,10 +19,7 @@ export const login = async (
     }
 
     if (!user.verified) {
-      return res.status(200).json({
-        message:
-          "Your email address needs to be confirmed before you can access your account.",
-      });
+      throw new AppError('Email Verify error', 400, 'Your email address needs to be confirmed before you can access your account.')
     }
     const { password: pwd, ...userData } = user.toObject();
     const jwt = new JsonWebToken(userData);
@@ -64,10 +61,10 @@ export const refresh = async (
   next: NextFunction
 ) => {
   try {
-    const decoded: IUser = await JsonWebToken.verify(req.body.refreshToken);
+    const decoded: UserInterface = await JsonWebToken.verify(req.body.refreshToken);
     const user = await User.findById(decoded.id).select("-password").exec();
     if (!user) {
-      throw new AppError("Refresh Token Error", 400, "Token expires");
+      throw new AppError("Refresh Token Error", 400, "Invalid Token");
     }
     const userData = user.toObject();
     const jwt = new JsonWebToken(userData);

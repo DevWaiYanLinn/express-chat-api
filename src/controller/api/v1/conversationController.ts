@@ -4,6 +4,7 @@ import Conversation from "../../../model/conversation";
 import Message from "../../../model/message";
 import { pubClient } from "../../../database/database";
 import AppError from '../../../exception/appError';
+import User from '../../../model/user';
 export const getAll = async (
   req: Request,
   res: Response,
@@ -43,8 +44,16 @@ export const store = async (req: Request,
   next: NextFunction) => {
   const members: Array<string> = req.body.members
   try {
+    const findUser = await User.find({
+      _id: {
+        $in: members
+      }
+    })
+    if (findUser.length !== members.length) {
+      throw new AppError('User Not Found', 400, 'missing user')
+    }
     const found = await Conversation.find({ members: members })
-    if (found) throw new AppError('Conflict Error', 409, 'already created')
+    if (found) throw new AppError('Conflict Error', 409, 'Already Created')
     const conversation = await Conversation.create({
       members: members
     })
