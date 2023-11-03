@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import Conversation from "../../../model/conversation";
 import Message from "../../../model/message";
 import { pubClient } from "../../../database/database";
+import AppError from '../../../exception/appError';
 export const getAll = async (
   req: Request,
   res: Response,
@@ -36,6 +37,23 @@ export const getAll = async (
     next(error);
   }
 };
+
+export const store = async (req: Request,
+  res: Response,
+  next: NextFunction) => {
+  const members: Array<string> = req.body.members
+  try {
+    const found = await Conversation.find({ members: members })
+    if (found) throw new AppError('Conflict Error', 409, 'already created')
+    const conversation = await Conversation.create({
+      members: members
+    })
+    res.status(200).json(conversation)
+  } catch (error) {
+    next(error)
+  }
+
+}
 
 export const messageByConversationId = async (
   req: Request,

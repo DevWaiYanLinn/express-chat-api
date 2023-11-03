@@ -70,6 +70,12 @@ app.use(emailRoute);
 app.use((error: any, req: Request, res: Response) => {
   const httpCode = error.httpCode || 500;
   const stack = error.statck || "server error";
+  if (env('APP_ENV', 'development')() === 'production') {
+    const isAppError = error instanceof AppError
+    if (!isAppError) {
+
+    }
+  }
   res.status(httpCode).json(stack);
 });
 

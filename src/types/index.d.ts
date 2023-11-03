@@ -4,4 +4,4 @@ export interface MailInterface {
   subject:() => string
 }
 
-export type HttpCode = 200 | 400 | 422 | 500;
+export type HttpCode = 200 | 400 | 422 | 409 | 500;
