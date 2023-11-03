@@ -6,8 +6,8 @@ import ConfirmationMail from "../mail/confirmationMail";
 import JsonWebToken from "./jwtService";
 
 const connection = {
-  host: config.redis.host,
-  port: config.redis.port,
+  host: config.redis.host(),
+  port: config.redis.port(),
 };
 
 export const emailQueue = new Queue("email", { connection });

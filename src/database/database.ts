@@ -8,7 +8,7 @@ export default async () => {
   try {
     await pubClient.connect();
     await subClient.connect();
-    await mongoose.connect(config.mongodb.url);
+    await mongoose.connect(config.mongodb.url());
   } catch (error) {
     console.log(error);
   }

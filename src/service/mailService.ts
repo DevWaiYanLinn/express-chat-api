@@ -3,15 +3,15 @@ import config from "../config/config";
 import { MailInterface } from "../types";
 
 const tranSporter = nodemailer.createTransport({
-  service: config.mail.service,
+  service: config.mail.service(),
   auth: {
-    user: config.mail.user,
-    pass: config.mail.pass,
+    user: config.mail.user(),
+    pass: config.mail.pass(),
   },
 });
 
 const mailOptions = {
-  from: config.mail.from,
+  from: config.mail.from(),
 };
 
 class Mailer {
