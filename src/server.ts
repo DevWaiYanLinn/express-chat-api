@@ -73,7 +73,7 @@ app.use((error: any, req: Request, res: Response) => {
   if (env('APP_ENV', 'development')() === 'production') {
     const isAppError = error instanceof AppError
     if (!isAppError) {
-
+        
     }
   }
   res.status(httpCode).json(stack);

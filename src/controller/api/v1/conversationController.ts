@@ -108,6 +108,12 @@ export const conversationMessage = async (
         return await Promise.all(
           res.map(async (c) => {
             c = c.toObject();
+            c.from = c.members.find(
+              (m) => m.id === req.user.id
+            );
+            c.to = c.members.find(
+              (m) => m.id !== req.user.id
+            );
             c.from.connected = true;
             const session = await sessionStore.findSession(c.to.id);
             c.to.connected = !!session?.connected;
