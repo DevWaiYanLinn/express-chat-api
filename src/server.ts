@@ -154,11 +154,12 @@ io.on("connection", async (socket) => {
         messageAt,
       });
       await newMessage.save();
+      const time: string = dayjs(messageAt).format("LT")
       await Conversation.findOneAndUpdate(
         { _id: conversation },
         {
           lastMessageAt: messageAt,
-          time: dayjs(messageAt).format("LT"),
+          time
         }
       ).exec();
 
@@ -169,6 +170,7 @@ io.on("connection", async (socket) => {
         to,
         content,
         messageAt,
+        time
       });
     }
   );

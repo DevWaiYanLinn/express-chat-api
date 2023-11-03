@@ -16,6 +16,7 @@ declare module "socket" {
       to,
       content,
       messageAt,
+      time
     }: {
       _id: string;
       conversation: string;
@@ -23,6 +24,7 @@ declare module "socket" {
       to: string;
       content: string;
       messageAt: string;
+      time: string
     }) => void;
   }
 
@@ -42,7 +44,7 @@ declare module "socket" {
     }) => void;
   }
 
-  export interface InterServerEvents {}
+  export interface InterServerEvents { }
 
   export interface SocketData {
     userId: string;
