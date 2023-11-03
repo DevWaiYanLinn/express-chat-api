@@ -20,6 +20,9 @@ export default {
   jwt: {
     secret: env("JWT_SECRET", "12345"),
   },
+  cors:{
+    origin:'*'
+  }
 } as const;
 
 export const CONFIRM_EMAIL = "CONFIRM_EMAIL";

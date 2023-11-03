@@ -23,10 +23,12 @@ import dayjs from "./lib/utility";
 import AppError from "./exception/appError";
 import JsonWebToken from "./service/jwtService";
 import { IUser } from "./model/user";
+import { env } from './lib/helper';
+import config from './config/config';
 dotenv.config();
 
-const port = process.env.APP_PORT;
-const hostName: any = "192.168.99.139";
+const port = env('APP_PORT', 4000)();
+const hostName: any = env('APP_HOST', '127.0.0.1')();
 
 const app: Express = express();
 const server = createServer(app);
@@ -37,15 +39,11 @@ const io = new Server<
   InterServerEvents,
   SocketData
 >(server, {
-  cors: {
-    origin: "http://192.168.99.139:3000",
-  },
+  cors: config.cors
 });
 
 app.use(
-  cors({
-    origin: "http://192.168.99.139:3000",
-  })
+  cors(config.cors)
 );
 
 app.use((req, res, next) => {
